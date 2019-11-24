@@ -98,11 +98,8 @@ function startTwitchStreamAlerts() {
 }
 
 function startYoutubeVideoAlerts() {
-    console.log('Searching last video...');
     Youtube.search('UCWMDouVLeI-akimFWkdt3Pw', config.youtubeApiKey).then(video => {
         let id = video.id.videoId;
-
-        console.log(`Last video id: ${id}`);
 
         if (id !== alerts.youtube.lastVideoId) {
             alerts.youtube.lastVideoId = id;
