@@ -1,0 +1,25 @@
+{
+  "name": "jimmyboyyy-discord-bot",
+  "version": "1.0.0",
+  "description": "JimmyBoyyy's discord bot",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/roro1506HD/jimmyboyyy-discord-bot.git"
+  },
+  "keywords": [],
+  "author": "roro1506_HD",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/roro1506HD/jimmyboyyy-discord-bot/issues"
+  },
+  "homepage": "https://github.com/roro1506HD/jimmyboyyy-discord-bot#readme",
+  "dependencies": {
+    "async-exit-hook": "^2.0.1",
+    "axios": "^0.19.0",
+    "discord.js": "^11.5.1"
+  }
+}
