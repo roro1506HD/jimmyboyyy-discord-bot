@@ -112,7 +112,7 @@ function startYoutubeVideoAlerts() {
         }
     }).catch(console.log);
 
-    setTimeout(startYoutubeVideoAlerts, 1200000);
+    setTimeout(startYoutubeVideoAlerts, 3600000);
 }
 
 function startYoutubeVodAlerts() {
@@ -130,7 +130,7 @@ function startYoutubeVodAlerts() {
         }
     }).catch(console.log);
 
-    setTimeout(startYoutubeVodAlerts, 1200000);
+    setTimeout(startYoutubeVodAlerts, 3600000);
 }
 //==========================================================
 
