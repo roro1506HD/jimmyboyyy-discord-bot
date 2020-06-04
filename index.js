@@ -24,7 +24,8 @@ const axios = require('axios');
 const twitchAxios = axios.create({
 	baseURL: 'https://api.twitch.tv/helix/',
 	headers: {
-		'Client-ID': config.twitchClientId
+		'Client-ID': config.twitchClientId,
+		'Authorization': 'Bearer ' + config.twitchOauthToken
 	}
 });
 // Create youtube axios instance
