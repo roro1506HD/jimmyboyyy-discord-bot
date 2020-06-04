@@ -20,14 +20,7 @@ const files = require('fs');
 
 // Load axios instance creator
 const axios = require('axios');
-// Create twitch axios instance with client id header
-const twitchAxios = axios.create({
-	baseURL: 'https://api.twitch.tv/helix/',
-	headers: {
-		'Client-ID': config.twitchClientId,
-		'Authorization': 'Bearer ' + config.twitchOauthToken
-	}
-});
+
 // Create youtube axios instance
 const youtubeAxios = axios.create({
 	baseURL: 'https://www.googleapis.com/youtube/v3/'
@@ -49,7 +42,11 @@ function Twitch() {}
 
 Twitch.getStream = userId => {
 	return new Promise((resolve, reject) => {
-		twitchAxios.get('/streams', {
+		axios.get('https://api.twitch.tv/helix/streams', {
+		  headers: {
+        'Client-ID': config.twitchClientId,
+        'Authorization': 'Bearer ' + config.twitchOauthToken
+      },
 			params: {
 				user_id: userId,
 				first: 1
@@ -82,9 +79,9 @@ Youtube.search = (channelId, key) => {
 //==========================================================
 function startTwitchStreamAlerts() {
     Twitch.getStream(49035758).then(stream => {
-        if (stream.data.length == 0 && alerts.twitch.live)
+        if (stream.data.length === 0 && alerts.twitch.live)
             alerts.twitch.live = false;
-        else if (stream.data.length == 1 && !alerts.twitch.live) {
+        else if (stream.data.length === 1 && !alerts.twitch.live) {
             alerts.twitch.live = true;
 
             guild.roles.get('592695539242500096').setMentionable(true, 'Sending alert').then(role => {
@@ -93,9 +90,25 @@ function startTwitchStreamAlerts() {
                 }).catch(console.log);
             }).catch(console.log);
         }
-    }).catch(console.log);
 
-    setTimeout(startTwitchStreamAlerts, 60000);
+      setTimeout(startTwitchStreamAlerts, 60000);
+    }).catch(reason => {
+      if (reason.status === 401) {
+        axios.post('https://api.twitch.tv/helix/oauth2/token', {
+          params: {
+            grant_type: 'refresh_token',
+            refresh_token: config.twitchRefreshToken,
+            client_id: config.twitchClientId,
+            client_secret: config.twitchClientSecret
+          }
+        }).then(value => {
+          console.log(value.data)
+        })
+        .catch(console.log);
+      }
+
+      console.log(reason);
+    });
 }
 
 function startYoutubeVideoAlerts() {
@@ -139,19 +152,20 @@ exitHook(() => {
     console.log('Calling exit hook');
     client.destroy();
     files.writeFileSync('./alerts.json', JSON.stringify(alerts));
+    files.writeFileSync('./config.json', JSON.stringify(config));
     console.log('Called exit hook');
 });
 
 // On Ready Event
 client.on('ready', () => {
-    guild = client.guilds.first();
-    welcomeChannel = client.channels.get('591402976690831370');
-    settingsChannel = client.channels.get('591343927173578762');
-    alertsChannel = client.channels.get('591339845662670858');
+    guild = client.guilds.cache.first();
+    welcomeChannel = client.channels.cache.get('591402976690831370');
+    settingsChannel = client.channels.cache.get('591343927173578762');
+    alertsChannel = client.channels.cache.get('591339845662670858');
 
-    settingsChannel.fetchMessages({limit: 1}).then(messages => {
+    settingsChannel.messages.fetch({limit: 1}).then(messages => {
         if (messages.size > 0)
-            messages.first().delete();
+            messages.first().delete().then(r => "Deleted message!");
     });
 
     settingsChannel.send({
@@ -172,7 +186,7 @@ client.on('ready', () => {
     startYoutubeVideoAlerts();
     startYoutubeVodAlerts();
 
-    console.log(`Logged in as ${client.user.tag}, serving ${client.users.size} users in guild ${guild.id} (${guild.name})`);
+    console.log(`Logged in as ${client.user.tag}, serving ${client.users.cache.size} users in guild ${guild.id} (${guild.name})`);
 });
 
 // On Client Join
@@ -191,20 +205,20 @@ client.on('messageReactionAdd', (reaction, user) => {
     }
     
     if (reaction.emoji.id === '593025513862201344') {
-        guild.fetchMember(user).then(member => {
-            member.addRole('592695539242500096', 'Added reaction to settings channel.');
+        guild.members.cache.fetch(user).then(member => {
+            member.roles.add('592695539242500096', 'Added reaction to settings channel.');
         });
     } else if (reaction.emoji.id === '593025530539016193') {
-        guild.fetchMember(user).then(member => {
-            member.addRole('592695579478327296', 'Added reaction to settings channel.');
+        guild.members.cache.fetch(user).then(member => {
+            member.roles.add('592695579478327296', 'Added reaction to settings channel.');
         });
     } else if (false && reaction.emoji.id === '593025468412985344') {
-        guild.fetchMember(user).then(member => {
-            member.addRole('592695613586538496', 'Added reaction to settings channel.');
+        guild.members.cache.fetch(user).then(member => {
+            member.roles.add('592695613586538496', 'Added reaction to settings channel.');
         });
     } else if (false && reaction.emoji.id === '593025491179405322') {
-        guild.fetchMember(user).then(member => {
-            member.addRole('592695643063975936', 'Added reaction to settings channel.');
+        guild.members.cache.fetch(user).then(member => {
+            member.roles.add('592695643063975936', 'Added reaction to settings channel.');
         });
     } else
         reaction.remove(user);
@@ -218,20 +232,20 @@ client.on('messageReactionRemove', (reaction, user) => {
         return;
     
     if (reaction.emoji.id === '593025513862201344') {
-        guild.fetchMember(user).then(member => {
-            member.removeRole('592695539242500096', 'Removed reaction from settings channel.');
+        guild.members.cache.fetch(user).then(member => {
+            member.roles.remove('592695539242500096', 'Removed reaction from settings channel.');
         });
     } else if (reaction.emoji.id === '593025530539016193') {
-        guild.fetchMember(user).then(member => {
-            member.removeRole('592695579478327296', 'Removed reaction from settings channel.');
+        guild.members.cache.fetch(user).then(member => {
+            member.roles.remove('592695579478327296', 'Removed reaction from settings channel.');
         });
     } else if (false && reaction.emoji.id === '593025468412985344') {
-        guild.fetchMember(user).then(member => {
-            member.removeRole('592695613586538496', 'Removed reaction from settings channel.');
+        guild.members.cache.fetch(user).then(member => {
+            member.roles.remove('592695613586538496', 'Removed reaction from settings channel.');
         });
     } else if (false && reaction.emoji.id === '593025491179405322') {
-        guild.fetchMember(user).then(member => {
-            member.removeRole('592695643063975936', 'Removed reaction from settings channel.');
+        guild.members.cache.fetch(user).then(member => {
+            member.roles.remove('592695643063975936', 'Removed reaction from settings channel.');
         });
     }
 });

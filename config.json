@@ -1,5 +1,8 @@
 {
 	"token": "",
 	"twitchClientId": "",
+	"twitchClientSecret": "",
+	"twitchRefreshToken": "",
+	"twitchOauthToken": "",
 	"youtubeApiKey": ""
 }
